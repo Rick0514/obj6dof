@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="Camera">
+    <xacro:property name="camera_size" value="0.08"/>
+
+    <xacro:macro name="Macro_CameraROS" params="name parent frame image_topic hz *origin fov width height">
+        <joint name="${name}_mount_joint" type="fixed">
+            <axis xyz="0 1 0"/>
+            <xacro:insert_block name="origin"/>
+            <parent link="${parent}"/>
+            <child link="${frame}"/>
+        </joint>
+
+        <!-- gazebo camera frame -->
+        <link name="${frame}"/>
+
+        <!-- actual camera frame -->
+        <joint name="${name}_mount_joint_1" type="fixed">
+            <axis xyz="0 1 0"/>
+            <origin xyz="0 0 0" rpy="-${M_PI/2} 0 -${M_PI/2}"/>
+            <parent link="${frame}"/>
+            <child link="camera"/>
+        </joint>
+        <link name="camera" />
+        
+        <gazebo reference="${frame}">
+            <sensor type="camera" name="${name}">
+                <visualize>true</visualize>
+                <update_rate>${hz}</update_rate>
+                <camera name="head">
+                    <horizontal_fov>${fov}</horizontal_fov>
+                    <image>
+                        <width>${width}</width>
+                        <height>${height}</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.8</near>
+                        <far>300</far>
+                    </clip>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.007</stddev>
+                    </noise>
+                </camera>
+                <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+                    <alwaysOn>true</alwaysOn>
+                    <updateRate>${hz}</updateRate>
+                    <cameraName>${name}</cameraName>
+                    <imageTopicName>${image_topic}</imageTopicName>
+                    <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+                    <frameName>${frame}</frameName>
+                    <hackBaseline>0.07</hackBaseline>
+                    <distortionK1>0.0</distortionK1>
+                    <distortionK2>0.0</distortionK2>
+                    <distortionK3>0.0</distortionK3>
+                    <distortionT1>0.0</distortionT1>
+                    <distortionT2>0.0</distortionT2>
+                </plugin>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+</robot>

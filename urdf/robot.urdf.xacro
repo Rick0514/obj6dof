@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+
+<robot name="robot" xmlns:xacro="http://ros.org/wiki/xacro">
+  
+	<xacro:property name="M_PI" value="3.14159265358979"/>
+
+	<link name="base_link">
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<box size="1.0 1.0 1.0"/>
+			</geometry>
+		</collision>
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<box size="1.0 1.0 1.0" />
+			</geometry>
+		</visual>
+		<inertial>
+			<mass value="1.0" />
+			<inertia ixx="0.0833333" ixy = "0" ixz = "0" iyy="0.0833333" iyz= "0" izz="0.0833333" />
+		</inertial>
+	</link>
+
+	<gazebo>
+		<plugin name="move" filename="libSimMotion.so">
+            <link>base_link</link>
+        </plugin>
+	</gazebo>
+
+	<gazebo>
+		<plugin name="p3d" filename="libSimP3D.so">
+			<updateRate>50.0</updateRate>
+			<bodyName>base_link</bodyName>
+			<topicName>odom</topicName>
+			<frameName>map</frameName>
+			<xyzOffsets>0 0 0</xyzOffsets>
+			<rpyOffsets>0 0 0</rpyOffsets>
+		</plugin>
+	</gazebo>
+
+    <link name="imu_link"/>
+    <joint name="imu_joint" type="fixed">
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="imu_link"/>
+    </joint>
+
+    <gazebo>
+        <plugin name="imu_controller" filename="libhector_gazebo_ros_imu.so">
+            <updateRate>100.0</updateRate>
+            <bodyName>imu_link</bodyName>
+            <topicName>imu/data</topicName>
+            <accelDrift>0.0 0.0 0.0</accelDrift>
+            <accelGaussianNoise>0.0 0.0 0.0</accelGaussianNoise>
+            <rateDrift>0.0 0.0 0.0 </rateDrift>
+            <rateGaussianNoise>0.0 0.0 0.0 </rateGaussianNoise>
+            <headingDrift>0.0</headingDrift>
+            <headingGaussianNoise>0.0</headingGaussianNoise>
+        </plugin>
+    </gazebo>
+
+    <!-- velodyne and its parameters-->
+    <xacro:include filename="$(find obj_with_6dof)/urdf/velodyne.xacro"/>
+	<xacro:VLP name="rslidar16" topic="lidar_points" organize_cloud="false" hz="10" gpu="true" visualize="false">
+		<origin xyz="0.1 0.2 0.5" rpy="0 0 0" />
+	</xacro:VLP>
+
+    <!-- camera and its parameters-->
+	<xacro:include filename="$(find obj_with_6dof)/urdf/CameraSensor.xacro"/>
+	<xacro:Macro_CameraROS name="realsense" parent="base_link" frame="camera_fake" image_topic="image" fov="1.047198" hz="20" width="640" height="480">
+		<origin xyz="0.1 0.1 0.1" rpy="0 0 0" />
+	</xacro:Macro_CameraROS>
+	
+</robot>

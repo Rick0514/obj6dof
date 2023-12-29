@@ -32,7 +32,7 @@ namespace gazebo
     private:
         // assume mass is 1.0
         float m_max_acc{5.0};
-        float m_max_wacc{M_PI/9};
+        float m_max_wacc{M_PI/3};
         
         float xyz_pid_p{10.0};
         float xyz_pid_d{20.0};

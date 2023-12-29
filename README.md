@@ -92,7 +92,7 @@ If you dont need both of the sensors, just feel free to comment out what you don
 ### 5. record data
 
 ```bash
-rosbag record -O <your bag> /imu/data /lidar_points /realsense/image
+rosbag record -O <your bag> /imu/data /lidar_points /image
 ```
 
 ### 6. get your ground truth

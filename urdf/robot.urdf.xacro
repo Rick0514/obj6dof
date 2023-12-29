@@ -31,7 +31,7 @@
 
 	<gazebo>
 		<plugin name="p3d" filename="libSimP3D.so">
-			<updateRate>50.0</updateRate>
+			<updateRate>100.0</updateRate>
 			<bodyName>base_link</bodyName>
 			<topicName>odom</topicName>
 			<frameName>map</frameName>
@@ -63,14 +63,19 @@
 
     <!-- velodyne and its parameters-->
     <xacro:include filename="$(find obj_with_6dof)/urdf/velodyne.xacro"/>
-	<xacro:VLP name="rslidar16" topic="lidar_points" organize_cloud="false" hz="10" gpu="true" visualize="false">
-		<origin xyz="0.1 0.2 0.5" rpy="0 0 0" />
+	<xacro:VLP name="rslidar16" topic="lidar_points" organize_cloud="true" hz="10" gpu="true" visualize="false">
+		<origin xyz="0.1 0.2 0.3" rpy="0 0 ${M_PI}" />
 	</xacro:VLP>
 
+    <!-- <xacro:include filename="$(find obj_with_6dof)/urdf/velodyne.xacro"/>
+	<xacro:VLP name="rslidar16" topic="lidar_points" organize_cloud="true" hz="10" gpu="true" visualize="false">
+		<origin xyz="0 0 0" rpy="0 0 0" />
+	</xacro:VLP> -->
+
     <!-- camera and its parameters-->
-	<xacro:include filename="$(find obj_with_6dof)/urdf/CameraSensor.xacro"/>
+	<!-- <xacro:include filename="$(find obj_with_6dof)/urdf/CameraSensor.xacro"/>
 	<xacro:Macro_CameraROS name="realsense" parent="base_link" frame="camera_fake" image_topic="image" fov="1.047198" hz="20" width="640" height="480">
 		<origin xyz="0.1 0.1 0.1" rpy="0 0 0" />
-	</xacro:Macro_CameraROS>
+	</xacro:Macro_CameraROS> -->
 	
 </robot>

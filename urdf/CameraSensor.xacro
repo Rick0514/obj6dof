@@ -47,7 +47,7 @@
                     <alwaysOn>true</alwaysOn>
                     <updateRate>${hz}</updateRate>
                     <cameraName>${name}</cameraName>
-                    <imageTopicName>${image_topic}</imageTopicName>
+                    <imageTopicName>/${image_topic}</imageTopicName>
                     <cameraInfoTopicName>camera_info</cameraInfoTopicName>
                     <frameName>${frame}</frameName>
                     <hackBaseline>0.07</hackBaseline>

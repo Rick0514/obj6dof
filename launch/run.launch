@@ -28,6 +28,6 @@
         <arg name="verbose" value="true" />
     </include>
 
-    <node name="keypad" pkg="obj_with_6dof" type="teleop.py" launch-prefix="gnome-terminal -x" />
+    <node name="keypad" pkg="obj_with_6dof" type="teleop.py" launch-prefix="xterm -e" />
 
 </launch>

@@ -8,18 +8,18 @@
 		<collision>
 			<origin xyz="0 0 0" rpy="0 0 0"/>
 			<geometry>
-				<box size="1.0 1.0 1.0"/>
+				<box size="0.2 0.2 0.2"/>
 			</geometry>
 		</collision>
 		<visual>
 			<origin xyz="0 0 0" rpy="0 0 0" />
 			<geometry>
-				<box size="1.0 1.0 1.0" />
+				<box size="0.2 0.2 0.2" />
 			</geometry>
 		</visual>
 		<inertial>
 			<mass value="1.0" />
-			<inertia ixx="0.0833333" ixy = "0" ixz = "0" iyy="0.0833333" iyz= "0" izz="0.0833333" />
+			<inertia ixx="0.0066667" ixy = "0" ixz = "0" iyy="0.0066667" iyz= "0" izz="0.0066667" />
 		</inertial>
 	</link>
 
@@ -40,7 +40,7 @@
 		</plugin>
 	</gazebo>
 
-    <link name="imu_link"/>
+    <!-- <link name="imu_link"/>
     <joint name="imu_joint" type="fixed">
         <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
         <parent link="base_link"/>
@@ -59,13 +59,13 @@
             <headingDrift>0.0</headingDrift>
             <headingGaussianNoise>0.0</headingGaussianNoise>
         </plugin>
-    </gazebo>
+    </gazebo> -->
 
     <!-- velodyne and its parameters-->
-    <xacro:include filename="$(find obj_with_6dof)/urdf/velodyne.xacro"/>
+    <!-- <xacro:include filename="$(find obj_with_6dof)/urdf/velodyne.xacro"/>
 	<xacro:VLP name="rslidar16" topic="lidar_points" organize_cloud="true" hz="10" gpu="true" visualize="false">
 		<origin xyz="0.1 0.2 0.3" rpy="0 0 ${M_PI}" />
-	</xacro:VLP>
+	</xacro:VLP> -->
 
     <!-- <xacro:include filename="$(find obj_with_6dof)/urdf/velodyne.xacro"/>
 	<xacro:VLP name="rslidar16" topic="lidar_points" organize_cloud="true" hz="10" gpu="true" visualize="false">
@@ -78,4 +78,21 @@
 		<origin xyz="0.1 0.1 0.1" rpy="0 0 0" />
 	</xacro:Macro_CameraROS> -->
 	
+    <xacro:include filename="$(find obj_with_6dof)/urdf/fisheye.xacro"/>
+	<xacro:macro_fisheye name="front_cam" parent="base_link" hfov="1.92" hz="10" width="800" height="768">
+		<origin xyz="0.2 0 0" rpy="0 0 0" />
+	</xacro:macro_fisheye>
+
+    <!-- left -->
+    <xacro:include filename="$(find obj_with_6dof)/urdf/fisheye.xacro"/>
+	<xacro:macro_fisheye name="left_cam" parent="base_link" hfov="1.92" hz="10" width="800" height="768">
+		<origin xyz="0 0.2 0" rpy="0 0 ${M_PI/2}" />
+	</xacro:macro_fisheye>
+
+    <!-- right -->
+    <!-- <xacro:include filename="$(find obj_with_6dof)/urdf/fisheye.xacro"/>
+	<xacro:macro_fisheye name="left_cam" parent="base_link" hfov="1.92" hz="10" width="800" height="768">
+		<origin xyz="0 -0.2 0" rpy="0 0 -${M_PI/2}" />
+	</xacro:macro_fisheye> -->
+
 </robot>

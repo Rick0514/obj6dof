@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<robot name="fisheye" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- camera props -->
+    <!-- <xacro:property name="hfov" value="${radians(185)}"/> -->
+    <!-- <xacro:property name="width" value="754"/>
+    <xacro:property name="height" value="480"/> -->
+    <xacro:property name="clip_near" value="0.1"/>
+    <xacro:property name="clip_far" value="20"/>
+
+    <xacro:macro name="macro_fisheye" params="parent name hfov hz *origin width height">
+
+        <joint name="${name}_mount_joint" type="fixed">
+            <axis xyz="0 1 0"/>
+            <xacro:insert_block name="origin"/>
+            <parent link="${parent}"/>
+            <child link="${name}_fisheye"/>
+        </joint>
+
+        <!-- gazebo camera frame -->
+        <link name="${name}_fisheye">
+            <visual>
+                <origin rpy="0 0 ${pi}"/>
+                <geometry>
+                    <mesh filename="package://obj_with_6dof/urdf/meshes/camera.dae" scale="0.7 0.7 0.7"/>
+                </geometry>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <link name="${name}_fisheye_frame"/>
+
+        <!-- actual camera frame -->
+        <joint name="${name}_mount_joint_1" type="fixed">
+            <axis xyz="0 1 0"/>
+            <origin xyz="0 0 0" rpy="-${M_PI/2} 0 -${M_PI/2}"/>
+            <parent link="${name}_fisheye"/>
+            <child link="${name}_fisheye_frame"/>
+        </joint>
+
+        <gazebo reference="${name}_fisheye">
+            <sensor name="fisheye" type="wideanglecamera">
+                <update_rate>${hz}</update_rate>
+                <always_on>true</always_on>
+
+                <camera>
+                    <horizontal_fov>${hfov}</horizontal_fov>
+                    <image>
+                        <width>${width}</width>
+                        <height>${height}</height>
+                    </image>
+                    <clip>
+                        <near>${clip_near}</near>
+                        <far>${clip_far}</far>
+                    </clip>
+
+                    <!-- See https://en.wikipedia.org/wiki/Fisheye_lens#Mapping_function -->
+                    <lens>
+                        <!-- gnomonical, stereographic, equidistant, equisolid_angle, orthographic -->
+                        <type>equidistant</type>
+
+                        <!-- if it is set to `true` your horizontal FOV will remain as defined -->
+                        <!-- otherwise it depends on lens type and custom function, if there is one -->
+                        <scale_to_hfov>false</scale_to_hfov>
+
+                        <!-- clip everything that is outside of this angle -->
+                        <cutoff_angle>${pi}</cutoff_angle>
+
+                        <!-- resolution of the cube-map texture, the higher it is - the sharper is your image -->
+                        <env_texture_size>1024</env_texture_size>
+                    </lens>
+                </camera>
+
+                <plugin name="fisheye_controller" filename="libgazebo_ros_camera.so">
+                    <alwaysOn>true</alwaysOn>
+                    <updateRate>${hz}</updateRate>
+                    <cameraName>${name}_fisheye</cameraName>
+                    <imageTopicName>image_raw</imageTopicName>
+                    <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+                    <frameName>${name}_fisheye</frameName>
+                </plugin>
+            </sensor>
+        </gazebo>
+
+    <!-- <gazebo>
+        <static>true</static>
+        <gravity>false</gravity>
+    </gazebo> -->
+
+    </xacro:macro>
+</robot>

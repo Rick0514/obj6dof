@@ -4,10 +4,8 @@
     <arg name="y" default="0"/>
     <arg name="z" default="1.0"/>
     <arg name="Y" default="0"/>
-    
-    <!-- <arg name="world_name" value="trees" /> -->
-    <!-- <arg name="world_name" value="twowalls" /> -->
-    <arg name="world_name" value="calib-2" />
+
+    <arg name="world_name" value="fecalib" />
     
     <env name="GAZEBO_PLUGIN_PATH" value="$(find obj_with_6dof)/worlds"/>
     <param name="robot_description" command="$(find xacro)/xacro '$(find obj_with_6dof)/urdf/robot.urdf.xacro'" />
@@ -28,6 +26,7 @@
         <arg name="verbose" value="true" />
     </include>
 
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find obj_with_6dof)/rviz/fisheye.rviz" />
     <node name="keypad" pkg="obj_with_6dof" type="teleop.py" launch-prefix="gnome-terminal -x" />
-
+    
 </launch>

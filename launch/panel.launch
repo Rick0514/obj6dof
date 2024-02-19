@@ -1,0 +1,3 @@
+<launch>
+    <node name="getdata" pkg="obj_with_6dof" type="getdata.py" launch-prefix="gnome-terminal -x" />
+</launch>

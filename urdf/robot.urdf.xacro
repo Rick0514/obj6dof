@@ -90,9 +90,15 @@
 	</xacro:macro_fisheye>
 
     <!-- right -->
-    <!-- <xacro:include filename="$(find obj_with_6dof)/urdf/fisheye.xacro"/>
-	<xacro:macro_fisheye name="left_cam" parent="base_link" hfov="1.92" hz="10" width="800" height="768">
+    <xacro:include filename="$(find obj_with_6dof)/urdf/fisheye.xacro"/>
+	<xacro:macro_fisheye name="right_cam" parent="base_link" hfov="1.92" hz="10" width="800" height="768">
 		<origin xyz="0 -0.2 0" rpy="0 0 -${M_PI/2}" />
-	</xacro:macro_fisheye> -->
+	</xacro:macro_fisheye>
+
+    <!-- back -->
+    <xacro:include filename="$(find obj_with_6dof)/urdf/fisheye.xacro"/>
+	<xacro:macro_fisheye name="back_cam" parent="base_link" hfov="1.92" hz="10" width="800" height="768">
+		<origin xyz="-0.2 0 0" rpy="0 0 ${M_PI}" />
+	</xacro:macro_fisheye>
 
 </robot>

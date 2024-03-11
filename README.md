@@ -28,7 +28,7 @@ cd .. && catkin build
 ```bash
 cd catkin_ws
 source devel/setup.bash
-roslauch obj_with_6dof demo.launch
+roslauch obj6dof demo.launch
 ```
 
 Then you should see interactive terminal to control motion of platform.
@@ -61,7 +61,7 @@ trans speed: 0.1, rot speed: 0.5
 ### 3. test obj with sensor
 
 ```bash
-roslaunch obj_with_6dof run.launch
+roslaunch obj6dof run.launch
 ```
 
 ![](./docs/lci.png)
@@ -73,14 +73,14 @@ see `urdf/robot.xacro`:
 
 ```xml
     <!-- velodyne and its parameters-->
-    <xacro:include filename="$(find obj_with_6dof)/urdf/velodyne.xacro"/>
+    <xacro:include filename="$(find obj6dof)/urdf/velodyne.xacro"/>
 	<xacro:VLP name="rslidar16" topic="lidar_points" organize_cloud="false" hz="10" gpu="true" visualize="false">
         <!-- extrincis to imu -->
 		<origin xyz="0.1 0.2 0.5" rpy="0 0 0" />
 	</xacro:VLP>
 
     <!-- camera and its parameters-->
-	<xacro:include filename="$(find obj_with_6dof)/urdf/CameraSensor.xacro"/>
+	<xacro:include filename="$(find obj6dof)/urdf/CameraSensor.xacro"/>
 	<xacro:Macro_CameraROS name="realsense" parent="base_link" frame="camera_fake" image_topic="image" fov="1.047198" hz="20" width="640" height="480">
         <!-- extrincis to imu -->
 		<origin xyz="0.1 0.1 0.1" rpy="0 0 0" />

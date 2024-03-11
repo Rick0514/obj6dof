@@ -9,8 +9,8 @@
     <!-- <arg name="world_name" value="twowalls" /> -->
     <arg name="world_name" value="calib-2" />
     
-    <env name="GAZEBO_PLUGIN_PATH" value="$(find obj_with_6dof)/worlds"/>
-    <param name="robot_description" command="$(find xacro)/xacro '$(find obj_with_6dof)/urdf/robot.urdf.xacro'" />
+    <env name="GAZEBO_PLUGIN_PATH" value="$(find obj6dof)/worlds"/>
+    <param name="robot_description" command="$(find xacro)/xacro '$(find obj6dof)/urdf/robot.urdf.xacro'" />
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
         <param name="publish_frequency" type="double" value="50.0" />
@@ -19,7 +19,7 @@
     <node pkg="gazebo_ros" type="spawn_model" name="model" args="-urdf -model robot -param robot_description -x $(arg x) -y $(arg y) -z $(arg z) -Y $(arg Y)" />
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <arg name="world_name" value="$(find obj_with_6dof)/worlds/$(arg world_name)" />
+        <arg name="world_name" value="$(find obj6dof)/worlds/$(arg world_name)" />
         <arg name="paused" value="false" />
         <arg name="use_sim_time" value="true"/>
         <arg name="gui" value="true" />
@@ -28,6 +28,6 @@
         <arg name="verbose" value="true" />
     </include>
 
-    <node name="keypad" pkg="obj_with_6dof" type="teleop.py" launch-prefix="gnome-terminal -x" />
+    <node name="keypad" pkg="obj6dof" type="teleop.py" launch-prefix="gnome-terminal -x" />
 
 </launch>

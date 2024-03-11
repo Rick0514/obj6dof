@@ -101,6 +101,13 @@ class GetData:
         cv2.imwrite('./feimg/cam{}_{}.jpg'.format(idx, self.img_oc[idx]), img)
         self.img_oc[idx] += 1
 
+    def save_surround_images(self):
+        for i in range(4):
+            img = self.bridge.imgmsg_to_cv2(self.queues[i].get()[1], "bgr8")
+            topic = self.topics[i]
+            imgn = './roundimg/' + topic[1:topic.find('_')+1] + rospy.Time.now().to_nsec() + '.png'
+            cv2.imwrite(imgn, img)
+
     def exit(self):
         self.bag.close()
 
@@ -126,6 +133,9 @@ if __name__ == '__main__':
     if not os.path.exists('./feimg'):
         os.mkdir('./feimg')
 
+    if not os.path.exists('./roundimg'):
+        os.mkdir('./roundimg')
+
     try:
         while not rospy.is_shutdown():
             key = getKey(None)
@@ -138,6 +148,8 @@ if __name__ == '__main__':
                 gd.save_one_image()
             elif key == 's':
                 gd.save_sync_images()
+            elif key == 'm':
+                gd.save_surround_images()
             elif key == '\x03':
                 break
     

@@ -4,7 +4,8 @@
     <arg name="y" default="0"/>
     <arg name="z" default="1.0"/>
     <arg name="Y" default="0"/>
-    
+    <arg name="use_rviz" default="true"/>
+
     <!-- <arg name="world_name" value="trees" /> -->
     <!-- <arg name="world_name" value="twowalls" /> -->
     <arg name="world_name" value="calib-2" />
@@ -29,5 +30,7 @@
     </include>
 
     <node name="keypad" pkg="obj6dof" type="teleop.py" launch-prefix="gnome-terminal -x" />
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find obj6dof)/rviz/vis.rviz" if="$(arg use_rviz)" />
 
 </launch>

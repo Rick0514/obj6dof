@@ -19,11 +19,12 @@
         </inertial>
     </xacro:macro>
 
-    <xacro:macro name="Livox_Mid_gazebo_sensor" params="visualize:=True update_rate:=10 resolution:=0.002 noise_mean:=0.0 noise_stddev:=0.01 name:=avia">
+    <xacro:macro name="Livox_Mid_gazebo_sensor" params="visualize:=False update_rate:=10 resolution:=0.002 noise_mean:=0.0 noise_stddev:=0.01 name:=avia publish_pointcloud_type:=1">
         <gazebo reference="${name}">
             <sensor type="ray" name="laser_${name}">
                 <pose>0 0 0 0 0 0</pose>
-                <visualize>${visualize}</visualize>
+                <!-- Note: set gui to true and visualize True, so pointclouds are sent!! -->
+                <visualize>True</visualize>
                 <update_rate>${update_rate}</update_rate>
                 <!-- This ray plgin is only for visualization. -->
                 <plugin name="gazebo_ros_laser_controller" filename="liblivox_laser_simulation.so">
@@ -57,13 +58,14 @@
                     <samples>${samples}</samples>
                     <downsample>${downsample}</downsample>
                     <csv_file_name>package://obj6dof/urdf/scan_mode/avia.csv</csv_file_name>
+                    <publish_pointcloud_type>${publish_pointcloud_type}</publish_pointcloud_type>
                     <ros_topic>${ros_topic}</ros_topic>
                 </plugin>
             </sensor>
         </gazebo>
     </xacro:macro>
 
-    <xacro:macro name="Livox_AVIA" params="name:=livox parent:=base_link *origin visualize:=True">
+    <xacro:macro name="Livox_AVIA" params="name:=livox parent:=base_link *origin pctype">
         <link name="${name}">
             <xacro:null_inertial/>
             <visual> 
@@ -86,7 +88,7 @@
             <child link="${name}"/>
             <xacro:insert_block name="origin"/>
         </joint>
-        <!-- <xacro:Livox_Mid_gazebo_sensor name="${name}" visualize="${visualize}"/> -->
+        <xacro:Livox_Mid_gazebo_sensor name="${name}" publish_pointcloud_type="${pctype}"/>
     </xacro:macro>
 
 </robot>

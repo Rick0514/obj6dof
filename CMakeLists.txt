@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(gazebo REQUIRED)
 include_directories(SYSTEM ${GAZEBO_INCLUDE_DIRS})
-link_directories(${GAZEBO_LIBRARY_DIRS})
 
 find_package(PCL REQUIRED)
 
@@ -20,6 +19,8 @@ catkin_package()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/worlds)
+
+add_subdirectory(src/livox)
 
 add_library(SimMotion SHARED src/SimMotion.cc)
 target_include_directories(SimMotion PRIVATE

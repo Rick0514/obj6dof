@@ -70,7 +70,7 @@
 
     <!-- avia and its parameters-->
     <xacro:include filename="$(find obj6dof)/urdf/avia.xacro"/>
-	<xacro:Livox_AVIA name="avia" parent="base_link" visualize="false">
+	<xacro:Livox_AVIA name="livox" parent="base_link" pctype="1">
 		<origin xyz="0.05 0 0.1" rpy="0 0 0"/>
 	</xacro:Livox_AVIA>
 

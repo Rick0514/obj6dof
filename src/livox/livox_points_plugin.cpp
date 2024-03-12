@@ -106,6 +106,8 @@ void LivoxPointsPlugin::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr
     ROS_INFO_STREAM("scan info size:" << aviaInfos.size());
     maxPointSize = aviaInfos.size();
 
+    frame_name = raySensor->Name();
+
     RayPlugin::Load(_parent, sdfPtr);
     laserMsg.mutable_scan()->set_frame(_parent->ParentName());
     parentEntity = world->EntityByName(_parent->ParentName());
@@ -130,14 +132,14 @@ void LivoxPointsPlugin::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr
     rosNode.reset(new ros::NodeHandle);
     switch (publishPointCloudType) {
         case SENSOR_MSG_POINT_CLOUD:
-            rosPointPub = rosNode->advertise<sensor_msgs::PointCloud>(curr_scan_topic, 5);
+            rosPointPub = rosNode->advertise<sensor_msgs::PointCloud>(curr_scan_topic, 50);
             break;
         case SENSOR_MSG_POINT_CLOUD2_POINTXYZ:
         case SENSOR_MSG_POINT_CLOUD2_LIVOXPOINTXYZRTL:
-            rosPointPub = rosNode->advertise<sensor_msgs::PointCloud2>(curr_scan_topic, 5);
+            rosPointPub = rosNode->advertise<sensor_msgs::PointCloud2>(curr_scan_topic, 50);
             break;
         case LIVOX_ROS_DRIVER_CUSTOM_MSG:
-            rosPointPub = rosNode->advertise<livox_ros_driver::CustomMsg>(curr_scan_topic, 5);
+            rosPointPub = rosNode->advertise<livox_ros_driver::CustomMsg>(curr_scan_topic, 50);
             break;
         default:
             break;
@@ -381,7 +383,7 @@ void LivoxPointsPlugin::PublishPointCloud(std::vector<std::pair<int, AviaRotateI
 
     sensor_msgs::PointCloud scan_point;
     scan_point.header.stamp = ros::Time::now();
-    scan_point.header.frame_id = "livox";
+    scan_point.header.frame_id = frame_name;
     auto &scan_points = scan_point.points;
     for (auto &pair : points_pair) {
         int verticle_index = roundf((pair.second.zenith - verticle_min) / verticle_incre);
@@ -477,7 +479,7 @@ void LivoxPointsPlugin::PublishPointCloud2XYZ(std::vector<std::pair<int, AviaRot
     pc.resize(pt_count);
     pcl::toROSMsg(pc, scan_point);
     scan_point.header.stamp = timestamp;
-    scan_point.header.frame_id = "livox";
+    scan_point.header.frame_id = frame_name;
     rosPointPub.publish(scan_point);
     // SendRosTf(parentEntity->WorldPose(), world->Name(), raySensor->ParentName());
     ros::spinOnce();
@@ -540,7 +542,7 @@ void LivoxPointsPlugin::PublishPointCloud2XYZRTL(std::vector<std::pair<int, Avia
     }
     pcl::toROSMsg(pc, scan_point);
     scan_point.header.stamp = timestamp;
-    scan_point.header.frame_id = "livox";
+    scan_point.header.frame_id = frame_name;
     rosPointPub.publish(scan_point);
     ros::spinOnce();
     if (scanPub && scanPub->HasConnections() && visualize) {
@@ -565,7 +567,7 @@ void LivoxPointsPlugin::PublishLivoxROSDriverCustomMsg(std::vector<std::pair<int
     livox_ros_driver::CustomMsg msg;
     // msg.header.frame_id = raySensor->ParentName();
 
-    msg.header.frame_id = "livox";
+    msg.header.frame_id = frame_name;
 
     struct timespec tn; 
     clock_gettime(CLOCK_REALTIME, &tn);

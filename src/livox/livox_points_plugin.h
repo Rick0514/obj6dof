@@ -118,7 +118,8 @@ class LivoxPointsPlugin : public RayPlugin {
     double maxDist = 400.0;
     double minDist = 0.1;
 
-    bool useInf = true;
+    std::string frame_name;
+
 };
 
 }  // namespace gazebo

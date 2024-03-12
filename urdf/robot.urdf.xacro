@@ -69,14 +69,20 @@
     </gazebo> -->
 
     <!-- avia and its parameters-->
-    <xacro:include filename="$(find obj6dof)/urdf/avia.xacro"/>
-	<xacro:Livox_AVIA name="livox" parent="base_link" pctype="1">
-		<origin xyz="0.05 0 0.1" rpy="0 0 0"/>
-	</xacro:Livox_AVIA>
+    <!-- <xacro:include filename="$(find obj6dof)/urdf/avia.xacro"/>
+	<xacro:Livox_AVIA name="avia" parent="base_link" pctype="1">
+		<origin xyz="0.05 -0.09 0" rpy="0 0 0"/>
+	</xacro:Livox_AVIA> -->
+
+    <!-- mid360 and its parameters-->
+    <xacro:include filename="$(find obj6dof)/urdf/mid360.xacro"/>
+	<xacro:Livox_Mid360 name="mid360" parent="base_link" pctype="1">
+		<origin xyz="0.05 -0.09 0" rpy="0 0 0"/>
+	</xacro:Livox_Mid360>
 
     <!-- camera and its parameters-->
 	<xacro:include filename="$(find obj6dof)/urdf/CameraSensor.xacro"/>
-	<xacro:Macro_CameraROS name="realsense" parent="base_link" frame="camera_fake" image_topic="image" fov="1.047198" hz="20" width="640" height="480">
+	<xacro:Macro_CameraROS name="realsense" parent="base_link" frame="camera_fake" image_topic="image" fov="1.047198" hz="10" width="640" height="480">
 		<origin xyz="0 0 0" rpy="0 0 0" />
 	</xacro:Macro_CameraROS>
 	

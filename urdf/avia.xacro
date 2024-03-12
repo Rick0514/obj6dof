@@ -21,7 +21,7 @@
 
     <xacro:macro name="Livox_Mid_gazebo_sensor" params="visualize:=False update_rate:=10 resolution:=0.002 noise_mean:=0.0 noise_stddev:=0.01 name:=avia publish_pointcloud_type:=1">
         <gazebo reference="${name}">
-            <sensor type="ray" name="laser_${name}">
+            <sensor type="ray" name="${name}">
                 <pose>0 0 0 0 0 0</pose>
                 <!-- Note: set gui to true and visualize True, so pointclouds are sent!! -->
                 <visualize>True</visualize>

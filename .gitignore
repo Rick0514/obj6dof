@@ -1,1 +1,3 @@
 *.so
+.vscode
+*.bag

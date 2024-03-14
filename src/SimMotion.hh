@@ -103,6 +103,5 @@ namespace gazebo
         ignition::math::Pose3d m_target_pose;
 
         ros::WallTimer m_scan_rosparam_timer;
-
 	};
 }

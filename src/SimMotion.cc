@@ -48,7 +48,15 @@ void SimMotion::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     }
     gzmsg << "get link name: " << m_link_name << std::endl;
 
-    m_target_pose.Set(0, 0, 0.5, 0, 0, 0);
+    m_target_pose.Pos().Set(0, 0, 0.5);
+    if (_sdf->HasElement("init_pos"))
+    {
+        m_target_pose.Pos() = _sdf->Get<ignition::math::Vector3d>("init_pos");
+    }
+    gzmsg << "init pos: ";
+    for(int i=0; i<3; i++)  gzmsg << m_target_pose.Pos()[i] << " ";
+    gzmsg << std::endl;
+    // m_target_pose.Set
 
 	gzmsg << "init pid control" << std::endl;
     m_pid_ptr.reset(new PosePID());

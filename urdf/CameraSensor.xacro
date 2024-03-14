@@ -18,9 +18,9 @@
             <axis xyz="0 1 0"/>
             <origin xyz="0 0 0" rpy="-${M_PI/2} 0 -${M_PI/2}"/>
             <parent link="${frame}"/>
-            <child link="camera"/>
+            <child link="${frame}/camera"/>
         </joint>
-        <link name="camera" />
+        <link name="${frame}/camera" />
         
         <gazebo reference="${frame}">
             <sensor type="camera" name="${name}">
@@ -34,20 +34,20 @@
                         <format>R8G8B8</format>
                     </image>
                     <clip>
-                        <near>0.8</near>
+                        <near>0.2</near>
                         <far>300</far>
                     </clip>
                     <noise>
                         <type>gaussian</type>
                         <mean>0.0</mean>
-                        <stddev>0.007</stddev>
+                        <stddev>0.0001</stddev>
                     </noise>
                 </camera>
                 <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
                     <alwaysOn>true</alwaysOn>
                     <updateRate>${hz}</updateRate>
                     <cameraName>${name}</cameraName>
-                    <imageTopicName>/${image_topic}</imageTopicName>
+                    <imageTopicName>${image_topic}</imageTopicName>
                     <cameraInfoTopicName>camera_info</cameraInfoTopicName>
                     <frameName>${frame}</frameName>
                     <hackBaseline>0.07</hackBaseline>

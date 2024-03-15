@@ -1,20 +1,20 @@
 <launch>
 
-    <arg name="x" default="-15"/>
+    <arg name="x" default="0"/>
     <arg name="y" default="0"/>
     <arg name="z" default="1.0"/>
     <arg name="Y" default="0"/>
     <arg name="use_rviz" default="true"/>
     <!-- avia or mid360 -->
-    <arg name="dev" default="mid360" />
+    <arg name="dev" default="avia" />
     <!-- <arg name="world_name" value="trees" /> -->
-    <!-- <arg name="world_name" value="calib-2" /> -->
-    <arg name="world_name" value="city.world" />
+    <arg name="world_name" value="calib-2" />
+    <!-- <arg name="world_name" value="city.world" /> -->
 
     <env name="GAZEBO_MODEL_PATH" value="$(find obj6dof)/worlds/models"/>
     <env name="GAZEBO_PLUGIN_PATH" value="$(find obj6dof)/worlds"/>
     
-    <param name="robot_description" command="$(find xacro)/xacro '$(find obj6dof)/urdf/cam_$(arg dev).urdf.xacro' init_x:=$(arg x) init_y:=$(arg y) init_z:=$(arg z)" />
+    <param name="robot_description" command="$(find xacro)/xacro '$(find obj6dof)/urdf/robot.urdf.xacro' init_x:=$(arg x) init_y:=$(arg y) init_z:=$(arg z)" />
 
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
         <param name="publish_frequency" type="double" value="50.0" />

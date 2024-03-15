@@ -96,7 +96,7 @@ void LivoxPointsPlugin::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr
 
     raySensor = _parent;
     auto sensor_pose = raySensor->Pose();
-    SendRosTf(sensor_pose, raySensor->ParentName(), raySensor->Name());
+    // SendRosTf(sensor_pose, raySensor->ParentName(), raySensor->Name());
 
     node = transport::NodePtr(new transport::Node());
     node->Init(raySensor->WorldName());
@@ -107,6 +107,7 @@ void LivoxPointsPlugin::Load(gazebo::sensors::SensorPtr _parent, sdf::ElementPtr
     maxPointSize = aviaInfos.size();
 
     frame_name = raySensor->Name();
+    gzmsg << "frame_name: " << frame_name << std::endl;
 
     RayPlugin::Load(_parent, sdfPtr);
     laserMsg.mutable_scan()->set_frame(_parent->ParentName());

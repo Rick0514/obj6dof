@@ -4,6 +4,9 @@
   
 	<xacro:property name="M_PI" value="3.14159265358979"/>
     <xacro:property name="cam_size" value="0.1"/>
+    <xacro:arg name="init_x" default="0"/>
+    <xacro:arg name="init_y" default="0"/>
+    <xacro:arg name="init_z" default="0.5"/>
 
     <xacro:macro name="Box_inertial_matrix" params="m l w h">
        <inertial>
@@ -33,6 +36,7 @@
 	<gazebo>
 		<plugin name="move" filename="libSimMotion.so">
             <link>base_link</link>
+            <init_pos>$(arg init_x) $(arg init_y) $(arg init_z)</init_pos>
         </plugin>
 	</gazebo>
 
@@ -69,21 +73,14 @@
     </gazebo> -->
 
     <!-- avia and its parameters-->
-    <!-- <xacro:include filename="$(find obj6dof)/urdf/avia.xacro"/>
-	<xacro:Livox_AVIA name="avia" parent="base_link" pctype="1">
-		<origin xyz="0.05 -0.09 0" rpy="0 0 0"/>
-	</xacro:Livox_AVIA> -->
+    <xacro:include filename="$(find obj6dof)/urdf/avia.xacro"/>
+	<xacro:Livox_AVIA name="avia1" parent="base_link" pctype="1" ros_topic="/avia1">
+		<origin xyz="0 0.1 0" rpy="0 0 ${M_PI/4}"/>
+	</xacro:Livox_AVIA>
 
-    <!-- mid360 and its parameters-->
-    <xacro:include filename="$(find obj6dof)/urdf/mid360.xacro"/>
-	<xacro:Livox_Mid360 name="mid360" parent="base_link" pctype="1">
-		<origin xyz="0.05 -0.09 0" rpy="0 0 0"/>
-	</xacro:Livox_Mid360>
+    <xacro:Livox_AVIA name="avia2" parent="base_link" pctype="1" ros_topic="/avia2">
+		<origin xyz="0 -0.1 0" rpy="0 0 -${M_PI/4}"/>
+	</xacro:Livox_AVIA>
 
-    <!-- camera and its parameters-->
-	<xacro:include filename="$(find obj6dof)/urdf/CameraSensor.xacro"/>
-	<xacro:Macro_CameraROS name="realsense" parent="base_link" frame="camera_fake" image_topic="image" fov="1.047198" hz="10" width="640" height="480">
-		<origin xyz="0 0 0" rpy="0 0 0" />
-	</xacro:Macro_CameraROS>
-	
+
 </robot>

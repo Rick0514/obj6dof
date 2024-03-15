@@ -1,8 +1,0 @@
-{
-    "odom": "/xx",
-    "pctype": 0,    // 0: pointcloud2, 1: livox   
-    "lidar_topic": [
-        "/xxx1",
-        "/xxx2"
-    ]
-}

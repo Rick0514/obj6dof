@@ -1,0 +1,8 @@
+odom: "/odom"
+
+pctype: 0    # 0: pointcloud2, 1: livox   
+
+lidar_topic: [
+    "/avia1",
+    "/avia2"
+]

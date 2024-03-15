@@ -32,7 +32,7 @@
         <arg name="verbose" value="true" />
     </include>
 
-    <!-- <node name="keypad" pkg="obj6dof" type="teleop.py" launch-prefix="gnome-terminal -x" /> -->
+    <node name="keypad" pkg="obj6dof" type="teleop.py" launch-prefix="gnome-terminal -x" />
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find obj6dof)/rviz/vis_$(arg dev).rviz" if="$(arg use_rviz)" />
 

@@ -6,6 +6,7 @@ import threading
 
 import roslib; roslib.load_manifest('teleop_twist_keyboard')
 import rospy
+from std_srvs.srv import Empty, EmptyRequest
 
 from geometry_msgs.msg import Twist, Pose
 import angles
@@ -35,6 +36,8 @@ Control Your Vehicle!
     Rot Speed:
     Slow / Fast: 3 / 4
     
+    Record PC: R
+
     CTRL-C to quit
 """
 notMove = np.array([0.0, 0.0, 0.0])
@@ -181,6 +184,9 @@ if __name__=="__main__":
     if key_timeout == 0.0:
         key_timeout = None
 
+    rec_srv = rospy.ServiceProxy('/get_data', Empty)
+    rec_srv.wait_for_service()
+
     pub_thread = PublishThread()
 
     try:
@@ -200,6 +206,9 @@ if __name__=="__main__":
                 pub_thread.update(notMove, notMove, speedBindings[key]) 
             elif key == 'm':
                 pub_thread.excite_rp()
+            elif key == 'r':
+                rec_srv.call(EmptyRequest())
+                print('call get data!!')
             else:
                 if (key == '\x03'):
                     break

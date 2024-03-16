@@ -21,6 +21,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/worlds)
 
 add_subdirectory(src/livox)
+add_subdirectory(src/pmcalib)
 
 add_library(SimMotion SHARED src/SimMotion.cc)
 target_include_directories(SimMotion PRIVATE

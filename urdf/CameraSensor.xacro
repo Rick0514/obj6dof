@@ -43,7 +43,8 @@
                         <stddev>0.0001</stddev>
                     </noise>
                 </camera>
-                <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+                <!-- <plugin name="camera_controller" filename="libgazebo_ros_camera.so"> -->
+                <plugin name="camera_controller" filename="libgz_cam.so">
                     <alwaysOn>true</alwaysOn>
                     <updateRate>${hz}</updateRate>
                     <cameraName>${name}</cameraName>

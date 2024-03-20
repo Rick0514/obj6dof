@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-bag = rosbag.Bag('sim.bag')
+bag = rosbag.Bag('/home/rick/chore/proj/xingqiu1/ws/bag/test.bag')
 
 lidar_tsp = []
 image_tsp = []
@@ -12,7 +12,7 @@ image_tsp = []
 for topic, msg, t in bag.read_messages():
     if topic == '/scan':
         lidar_tsp.append(msg.header.stamp.to_sec())
-    elif topic == '/image':
+    elif topic == '/left_cam/image':
         image_tsp.append(msg.header.stamp.to_sec())
 
 bag.close()

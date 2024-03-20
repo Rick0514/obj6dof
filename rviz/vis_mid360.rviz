@@ -26,7 +26,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: left_cam
+    SyncSource: mid360
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -59,17 +59,9 @@ Visualization Manager:
         All Enabled: false
         base_link:
           Value: false
-        left_cam:
-          Value: false
-        left_cam/camera:
-          Value: true
         map:
           Value: true
         mid360:
-          Value: true
-        right_cam:
-          Value: false
-        right_cam/camera:
           Value: true
       Marker Scale: 5
       Name: TF
@@ -79,14 +71,8 @@ Visualization Manager:
       Tree:
         map:
           base_link:
-            left_cam:
-              left_cam/camera:
-                {}
             mid360:
               {}
-            right_cam:
-              right_cam/camera:
-                {}
       Update Interval: 0
       Value: true
     - Class: rviz/Image
@@ -116,8 +102,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 9.02037525177002
-        Min Value: 0.44874894618988037
+        Max Value: 10.986348152160645
+        Min Value: 0.9535507559776306
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -169,25 +155,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 22.170618057250977
+      Distance: 44.28011703491211
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.9567583799362183
-        Y: -1.027363657951355
-        Z: 0.06013993173837662
+        X: 1.6838079690933228
+        Y: -2.930232524871826
+        Z: 3.02363657951355
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4703978896141052
+      Pitch: 0.44039833545684814
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.318574905395508
+      Yaw: 2.258580446243286
     Saved: ~
 Window Geometry:
   Displays:

@@ -6,7 +6,7 @@
     <arg name="Y" default="0"/>
     <arg name="use_rviz" default="true"/>
     <!-- avia or mid360 -->
-    <arg name="dev" default="mid360" />
+    <arg name="dev" default="avia" />
     <!-- <arg name="world_name" value="trees" /> -->
     <arg name="world_name" value="calib-2" />
     <!-- <arg name="world_name" value="city.world" /> -->

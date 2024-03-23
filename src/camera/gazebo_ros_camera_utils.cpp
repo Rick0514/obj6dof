@@ -180,6 +180,22 @@ void GazeboRosCameraUtils::Load(sensors::SensorPtr _parent,
   else
     this->cy_ = this->sdf->Get<double>("Cy");
 
+    if (!this->sdf->HasElement("Fx"))
+    {
+        ROS_DEBUG_NAMED("camera_utils", "Camera plugin missing <Fx>, defaults to 0");
+        this->fx_= 0;
+    }
+    else
+        this->fx_ = this->sdf->Get<double>("Fx");
+
+    if (!this->sdf->HasElement("Fy"))
+    {
+        ROS_DEBUG_NAMED("camera_utils", "Camera plugin missing <Fy>, defaults to 0");
+        this->fy_= 0;
+    }
+    else
+        this->fy_ = this->sdf->Get<double>("Fy");
+
   if (!this->sdf->HasElement("focalLength"))
   {
     ROS_DEBUG_NAMED("camera_utils", "Camera plugin missing <focalLength>, defaults to 0");
@@ -539,6 +555,16 @@ void GazeboRosCameraUtils::Init()
     }
   }
 
+  ROS_WARN_NAMED("camera_utils", "The <focal_length>[%f] you have provided for camera_ [%s]"
+               " is inconsistent with specified image_width [%d] and"
+               " HFOV [%f].   Please double check to see that"
+               " focal_length = width_ / (2.0 * tan(HFOV/2.0)),"
+               " the explected focal_lengtth value is [%f],"
+               " please update your camera_ model description accordingly.",
+                this->focal_length_, this->parentSensor_->Name().c_str(),
+                this->width_, hfov,
+                computed_focal_length);
+
   // fill CameraInfo
   sensor_msgs::CameraInfo camera_info_msg;
 
@@ -587,11 +613,13 @@ void GazeboRosCameraUtils::Init()
   camera_info_msg.D[3] = this->distortion_t2_;
   camera_info_msg.D[4] = this->distortion_k3_;
   // original camera_ matrix
-  camera_info_msg.K[0] = this->focal_length_;
+//   camera_info_msg.K[0] = this->focal_length_;
+  camera_info_msg.K[0] = this->fx_;
   camera_info_msg.K[1] = 0.0;
   camera_info_msg.K[2] = this->cx_;
   camera_info_msg.K[3] = 0.0;
-  camera_info_msg.K[4] = this->focal_length_;
+//   camera_info_msg.K[4] = this->focal_length_;
+  camera_info_msg.K[4] = this->fy_;
   camera_info_msg.K[5] = this->cy_;
   camera_info_msg.K[6] = 0.0;
   camera_info_msg.K[7] = 0.0;
@@ -608,12 +636,14 @@ void GazeboRosCameraUtils::Init()
   camera_info_msg.R[8] = 1.0;
   // camera_ projection matrix (same as camera_ matrix due
   // to lack of distortion/rectification) (is this generated?)
-  camera_info_msg.P[0] = this->focal_length_;
+//   camera_info_msg.P[0] = this->focal_length_;
+  camera_info_msg.P[0] = this->fx_;
   camera_info_msg.P[1] = 0.0;
   camera_info_msg.P[2] = this->cx_;
   camera_info_msg.P[3] = -this->focal_length_ * this->hack_baseline_;
   camera_info_msg.P[4] = 0.0;
-  camera_info_msg.P[5] = this->focal_length_;
+//   camera_info_msg.P[5] = this->focal_length_;
+  camera_info_msg.P[5] = this->fy_;
   camera_info_msg.P[6] = this->cy_;
   camera_info_msg.P[7] = 0.0;
   camera_info_msg.P[8] = 0.0;

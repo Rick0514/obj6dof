@@ -150,6 +150,8 @@ namespace gazebo
     protected: double cx_;
     protected: double cy_;
     protected: double focal_length_;
+    protected: double fx_;
+    protected: double fy_;
     protected: double hack_baseline_;
     protected: double distortion_k1_;
     protected: double distortion_k2_;

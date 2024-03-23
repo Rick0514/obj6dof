@@ -3,7 +3,7 @@
 <robot name="robot" xmlns:xacro="http://ros.org/wiki/xacro">
   
 	<xacro:property name="M_PI" value="3.14159265358979"/>
-    <xacro:property name="cam_size" value="0.1"/>
+    <xacro:property name="cam_size" value="0.01"/>
 
     <xacro:arg name="init_x" default="0"/>
     <xacro:arg name="init_y" default="0"/>
@@ -75,20 +75,21 @@
 
     <!-- avia and its parameters-->
     <xacro:include filename="$(find obj6dof)/urdf/avia.xacro"/>
+	<!-- <xacro:Livox_AVIA name="avia" parent="hik/camera" pctype="1"> -->
 	<xacro:Livox_AVIA name="avia" parent="base_link" pctype="1">
-		<origin xyz="0.05 -0.09 0" rpy="0 0 0"/>
+        <origin xyz="0 0 0.01" rpy="0 0 0"/>
 	</xacro:Livox_AVIA>
+
+    <!-- camera and its parameters-->
+	<xacro:include filename="$(find obj6dof)/urdf/CameraSensor.xacro"/>
+	<xacro:Macro_CameraROS name="hik" parent="avia" image_topic="image" fov="${M_PI*73.6/180}" hz="1" width="1536" height="1024">
+		<origin xyz="0.146255  0.288638  0.0275334" rpy="1.55921507 -0.02202108 -0.0168772" />
+	</xacro:Macro_CameraROS>
 
     <!-- mid360 and its parameters-->
     <!-- <xacro:include filename="$(find obj6dof)/urdf/mid360.xacro"/>
 	<xacro:Livox_Mid360 name="mid360" parent="base_link" pctype="1">
 		<origin xyz="0.05 -0.09 0" rpy="0 0 0"/>
 	</xacro:Livox_Mid360> -->
-
-    <!-- camera and its parameters-->
-	<xacro:include filename="$(find obj6dof)/urdf/CameraSensor.xacro"/>
-	<xacro:Macro_CameraROS name="realsense" parent="base_link" frame="camera_fake" image_topic="image" fov="1.047198" hz="10" width="640" height="480">
-		<origin xyz="0 0 0" rpy="0 0 0" />
-	</xacro:Macro_CameraROS>
 	
 </robot>

@@ -15,7 +15,7 @@
 
         <!-- actual camera frame -->
         <joint name="${name}_mount_joint_1" type="fixed">
-            <axis xyz="0 1 0"/>
+            <axis xyz="0 0 1"/>
             <origin xyz="0 0 0" rpy="-${M_PI/2} 0 -${M_PI/2}"/>
             <parent link="${name}"/>
             <child link="${name}/camera"/>

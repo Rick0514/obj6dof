@@ -83,7 +83,8 @@
     <!-- camera and its parameters-->
 	<xacro:include filename="$(find obj6dof)/urdf/CameraSensor.xacro"/>
 	<xacro:Macro_CameraROS name="hik" parent="avia" image_topic="image" fov="${M_PI*73.6/180}" hz="1" width="1536" height="1024">
-		<origin xyz="0.146255  0.288638  0.0275334" rpy="1.55921507 -0.02202108 -0.0168772" />
+		<origin xyz="-0.288638  -0.0275334  0.146255" rpy="-1.54897219  0.01713104 -0.01158016" />
+		<!-- <origin xyz="0 0 0" rpy="0 0 0" /> -->
 	</xacro:Macro_CameraROS>
 
     <!-- mid360 and its parameters-->

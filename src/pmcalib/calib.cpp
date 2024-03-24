@@ -11,6 +11,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/common/transforms.h>
 #include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/filters/voxel_grid.h>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -47,9 +48,11 @@ struct OptimParams
     OptimParams(int n, ceres::Problem& pro_) : pro(pro_)
     {
         poses.resize(n+1);
+        for(int i=0; i<n+1; i++)    poses[i] = new double[7];
 
         // init some params
-            
+        
+
         // add ext
         pro.AddParameterBlock(poses[0], 4, new ceres::QuaternionParameterization());
         pro.AddParameterBlock(&(poses[0][4]), 3);
@@ -72,7 +75,7 @@ struct OptimParams
     }
 
     ceres::Problem& pro;
-    vec_t<double[7]> poses;
+    vec_t<double*> poses;
 };
 
 struct SrcICPError
@@ -85,16 +88,19 @@ struct SrcICPError
     }
 
     template <typename T>
-    bool operator()(const T* const pose, T* residuals){
+    bool operator()(const T* const pose, T* residuals) const {
         // pose 0~3 q, 4~6, t
         Eigen::Quaternion<T> q = Eigen::Map<const Eigen::Quaternion<T>>(pose);
-        Eigen::Matrix<T,3,1> t = Eigen::Map<const Eigen::Matrix<T,3,1>>(pose[4]);
-        Eigen::Matrix<T,4,1> n = Eigen::Map<const Eigen::Matrix<T,4,1>>(pl.data());
+        Eigen::Matrix<T,3,1> t = Eigen::Map<const Eigen::Matrix<T,3,1>>(&(pose[4]));
+        Eigen::Matrix<T,4,1> n = Eigen::Map<const Eigen::Matrix<T,4,1>>((T*)(pl.data()));
 
-        Eigen::Matrix<T,4,1> ep; ep << pt.x, pt.y, pt.z, T(1.0);
-        ep.head<3>() = q * ep.head<3>() + t;
+        Eigen::Matrix<T,4,1> ep; ep << T(pt.x), T(pt.y), T(pt.z), T(1.0);
+        // ep.block<3, 1>(0) = q * ep.block<3, 1>(0) + t;
+        ep.template head<3>() = q * ep.template head<3>() + t;
 
         residuals[0] = ep.dot(n);
+
+        return true;
     }
 
     plane_t pl;
@@ -111,23 +117,26 @@ struct TarICPError
     }
 
     template <typename T>
-    bool operator()(const T* const pose, const T* const ext, T* residuals){
+    bool operator()(const T* const pose, const T* const ext, T* residuals) const {
         // pose 0~3 q, 4~6, t
         Eigen::Quaternion<T> q1 = Eigen::Map<const Eigen::Quaternion<T>>(pose);
-        Eigen::Matrix<T,3,1> t1 = Eigen::Map<const Eigen::Matrix<T,3,1>>(pose[4]);
+        Eigen::Matrix<T,3,1> t1 = Eigen::Map<const Eigen::Matrix<T,3,1>>(&(pose[4]));
 
         Eigen::Quaternion<T> q2 = Eigen::Map<const Eigen::Quaternion<T>>(ext);
-        Eigen::Matrix<T,3,1> t2 = Eigen::Map<const Eigen::Matrix<T,3,1>>(ext[4]);
+        Eigen::Matrix<T,3,1> t2 = Eigen::Map<const Eigen::Matrix<T,3,1>>(&(ext[4]));
 
         q2 = q1 * q2;
         t2 = q1 * t2 + t1;
 
-        Eigen::Matrix<T,4,1> n = Eigen::Map<const Eigen::Matrix<T,4,1>>(pl.data());
+        Eigen::Matrix<T,4,1> n = Eigen::Map<const Eigen::Matrix<T,4,1>>((T*)(pl.data()));
 
-        Eigen::Matrix<T,4,1> ep; ep << pt.x, pt.y, pt.z, T(1.0);
-        ep.head<3>() = q2 * ep.head<3>() + t2;
+        Eigen::Matrix<T,4,1> ep; ep << T(pt.x), T(pt.y), T(pt.z), T(1.0);
+        // ep.head<3>() = q2 * ep.head<3>() + t2;
+        ep.template head<3>() = q2 * ep.template head<3>() + t2;
 
         residuals[0] = ep.dot(n);
+
+        return true;
     }
 
     plane_t pl;
@@ -228,14 +237,15 @@ int main(int argc, char** argv)
 
     // 1. load gt map and make kdtree
     pc_t::Ptr global_map = pcl::make_shared<pc_t>();
-    std::string data_dir = pkg_dir + "/../pcd/pm/";
-    pcl::io::loadPCDFile<pt_t>(data_dir + "map.pcd", *global_map);
+    std::string data_dir = pkg_dir + conf_yml["pcd_file"].as<std::string>();
+    pcl::io::loadPCDFile<pt_t>(data_dir, *global_map);
     pcl::KdTreeFLANN<pt_t> kdtree;
     kdtree.setInputCloud(global_map);
 
     // 2. parse rosbag and fetch all data
     rosbag::Bag bag;
-    bag.open(data_dir + "test1.bag", rosbag::bagmode::Read);
+    data_dir = pkg_dir + conf_yml["bag_file"].as<std::string>();
+    bag.open(data_dir, rosbag::bagmode::Read);
 
     vvec_t<pc_ptr> vv_pc(lidar_topic.size(), vec_t<pc_ptr>{});
     vec_t<Pose6> v_odom;
@@ -278,15 +288,22 @@ int main(int argc, char** argv)
     int N = v_odom.size();
     ceres::Problem problem;
 
+    float ds_size;
+    ds_size = conf_yml["ds_size"].as<float>();
+    pcl::VoxelGrid<pt_t> ds;
+    ds.setLeafSize(ds_size, ds_size, ds_size);
     // prepare data block
     OptimParams op(N, problem);
-
     for(int i=0; i<N; i++){
         pc_ptr src = vv_pc[0][i];
         pc_ptr tar = vv_pc[1][i];
 
         // maybe downsample a bit?
         // downsample xxx
+        ds.setInputCloud(src);
+        ds.filter(*src);
+        ds.setInputCloud(tar);
+        ds.filter(*tar);
 
         // add residuals
         addResidualBlock(i+1, src, kdtree, op, problem, true);

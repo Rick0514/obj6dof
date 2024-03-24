@@ -6,3 +6,10 @@ lidar_topic: [
     "/avia1",
     "/avia2"
 ]
+
+
+pcd_file: "/../pcd/gmap.pcd"
+
+bag_file: "/../pcd/pm/test1.bag"
+
+ds_size: 0.5

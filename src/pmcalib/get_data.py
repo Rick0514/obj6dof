@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import rospy, rospkg, rosbag
 import yaml

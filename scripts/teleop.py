@@ -69,7 +69,7 @@ class PublishThread(threading.Thread):
     def __init__(self):
         super(PublishThread, self).__init__()
         self.publisher = rospy.Publisher('/target_pose', Pose, queue_size = 1)
-        self.xyz = np.array([0.0, 0.0, 0.0])
+        self.xyz = np.array([0.0, 0.0, 1.0])
         self.rpy = np.array([0.0, 0.0, 0.0])
         self.trans_speed = 0.1
         self.rot_speed = 0.5 * deg2rad
@@ -184,8 +184,10 @@ if __name__=="__main__":
     if key_timeout == 0.0:
         key_timeout = None
 
-    rec_srv = rospy.ServiceProxy('/get_data', Empty)
-    rec_srv.wait_for_service()
+    rec_srv = None
+    if len(sys.argv) > 1 and sys.argv[1] == "getdata":
+        rec_srv = rospy.ServiceProxy('/get_data', Empty)
+        rec_srv.wait_for_service()
 
     pub_thread = PublishThread()
 
@@ -206,7 +208,7 @@ if __name__=="__main__":
                 pub_thread.update(notMove, notMove, speedBindings[key]) 
             elif key == 'm':
                 pub_thread.excite_rp()
-            elif key == 'r':
+            elif key == 'r' and rec_srv is not None:
                 rec_srv.call(EmptyRequest())
                 print('call get data!!')
             else:

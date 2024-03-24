@@ -1,0 +1,6 @@
+grid_size: 0.2
+lidar_topic: "/scan"
+odom_topic: "/odom"
+# xyz rpy: lidar in imu frame
+ext: [0, 0, 0.1, 0, 0 ,0]
+save_pcd: "/../pcd/gmap.pcd"

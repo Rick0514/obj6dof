@@ -7,6 +7,9 @@
     <xacro:property name="ros_topic" value="scan"/>
     <xacro:property name="samples" value="24000"/>
     <xacro:property name="downsample" value="1"/>
+
+    <xacro:property name="horizontal_fov" value="360"/>
+    <xacro:property name="vertical_fov" value="180.0"/>
   
     <xacro:macro name="null_inertial">
         <inertial>
@@ -30,14 +33,14 @@
                             <horizontal>
                                 <samples>100</samples>
                                 <resolution>1</resolution>
-                                <min_angle>${-M_PI}</min_angle>
-                                <max_angle>${M_PI}</max_angle>
+                                <min_angle>${-horizontal_fov/360*M_PI}</min_angle>
+                                <max_angle>${horizontal_fov/360*M_PI}</max_angle>
                             </horizontal>
                             <vertical>
-                                <samples>360</samples>
+                                <samples>50</samples>
                                 <resolution>1</resolution>
-                                <min_angle>${-7.22/180*M_PI}</min_angle>
-                                <max_angle>${55.22/180*M_PI}</max_angle>
+                                <min_angle>${-vertical_fov/360*M_PI}</min_angle>
+                                <max_angle>${vertical_fov/360*M_PI}</max_angle>
                             </vertical>
                         </scan>
                         <range>

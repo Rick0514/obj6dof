@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(obj6dof)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/worlds)
+set(CMAKE_BUILD_TYPE Release)
+
 find_package(catkin REQUIRED COMPONENTS
     roscpp
+    roslib
     geometry_msgs
     nav_msgs
     tf2
@@ -15,10 +21,6 @@ include_directories(SYSTEM ${GAZEBO_INCLUDE_DIRS})
 find_package(PCL REQUIRED)
 
 catkin_package()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/worlds)
 
 add_subdirectory(src/livox)
 add_subdirectory(src/pmcalib)

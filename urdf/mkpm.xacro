@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+
+<robot name="robot" xmlns:xacro="http://ros.org/wiki/xacro">
+  
+	<xacro:property name="M_PI" value="3.14159265358979"/>
+    <xacro:property name="cam_size" value="0.01"/>
+    <xacro:arg name="init_x" default="0"/>
+    <xacro:arg name="init_y" default="0"/>
+    <xacro:arg name="init_z" default="0.5"/>
+
+    <xacro:macro name="Box_inertial_matrix" params="m l w h">
+       <inertial>
+               <mass value="${m}" />
+               <inertia ixx="${m*(h*h + l*l)/12}" ixy = "0" ixz = "0"
+                   iyy="${m*(w*w + l*l)/12}" iyz= "0"
+                   izz="${m*(w*w + h*h)/12}" />
+       </inertial>
+    </xacro:macro>
+
+	<link name="base_link">
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<box size="${cam_size} ${cam_size} ${cam_size}"/>
+			</geometry>
+		</collision>
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<box size="${cam_size} ${cam_size} ${cam_size}" />
+			</geometry>
+		</visual>
+        <xacro:Box_inertial_matrix m="1.0" l="${cam_size}" w="${cam_size}" h="${cam_size}"/>
+	</link>
+
+	<gazebo>
+		<plugin name="move" filename="libSimMotion.so">
+            <link>base_link</link>
+            <init_pos>$(arg init_x) $(arg init_y) $(arg init_z)</init_pos>
+        </plugin>
+	</gazebo>
+
+	<gazebo>
+		<plugin name="p3d" filename="libSimP3D.so">
+			<updateRate>100.0</updateRate>
+			<bodyName>base_link</bodyName>
+			<topicName>odom</topicName>
+			<frameName>map</frameName>
+			<xyzOffsets>0 0 0</xyzOffsets>
+			<rpyOffsets>0 0 0</rpyOffsets>
+		</plugin>
+	</gazebo>
+
+    <!-- <link name="imu_link"/>
+    <joint name="imu_joint" type="fixed">
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="imu_link"/>
+    </joint> -->
+
+    <!-- <gazebo>
+        <plugin name="imu_controller" filename="libhector_gazebo_ros_imu.so">
+            <updateRate>100.0</updateRate>
+            <bodyName>imu_link</bodyName>
+            <topicName>imu/data</topicName>
+            <accelDrift>0.0 0.0 0.0</accelDrift>
+            <accelGaussianNoise>0.0 0.0 0.0</accelGaussianNoise>
+            <rateDrift>0.0 0.0 0.0 </rateDrift>
+            <rateGaussianNoise>0.0 0.0 0.0 </rateGaussianNoise>
+            <headingDrift>0.0</headingDrift>
+            <headingGaussianNoise>0.0</headingGaussianNoise>
+        </plugin>
+    </gazebo> -->
+
+    <xacro:include filename="$(find obj6dof)/urdf/mid360.xacro"/>
+	<xacro:Livox_Mid360 name="mid360" parent="base_link" pctype="1">
+		<origin xyz="0 0 0.1" rpy="0 0 0"/>
+	</xacro:Livox_Mid360>
+
+</robot>

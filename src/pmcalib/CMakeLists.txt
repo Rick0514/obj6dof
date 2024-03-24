@@ -14,17 +14,17 @@ find_package(PCL REQUIRED)
 find_package(Ceres REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-add_executable(calib calib.cpp)
+# add_executable(calib calib.cpp)
 
-target_include_directories(calib PRIVATE 
-    ${catkin_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS}
-)
+# target_include_directories(calib PRIVATE 
+#     ${catkin_INCLUDE_DIRS}
+#     ${PCL_INCLUDE_DIRS}
+# )
 
-target_link_libraries(calib
-    ${catkin_LIBRARIES}
-    ${PCL_LIBRARIES}
-    ${CERES_LIBRARIES}
-    spdlog
-    yaml-cpp
-)
+# target_link_libraries(calib
+#     ${catkin_LIBRARIES}
+#     ${PCL_LIBRARIES}
+#     ${CERES_LIBRARIES}
+#     spdlog
+#     yaml-cpp
+# )

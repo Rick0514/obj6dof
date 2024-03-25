@@ -18,10 +18,16 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Odometry.h>
+#include <nav_msgs/Path.h>
 #include <sensor_msgs/PointCloud2.h>
 
 #include <ceres/ceres.h>
+
+#include "disturb.hpp"
+
+static double to_rad = M_PI / 180.0; 
 
 // parse bag
 std::shared_ptr<spdlog::logger> lg;
@@ -50,12 +56,28 @@ struct OptimParams
         poses.resize(n+1);
         for(int i=0; i<n+1; i++)    poses[i] = new double[7];
 
-        // init some params
-        
-
         // add ext
         pro.AddParameterBlock(poses[0], 4, new ceres::QuaternionParameterization());
         pro.AddParameterBlock(&(poses[0][4]), 3);
+    }
+
+    void initParams(const YAML::Node& conf, const vec_t<Pose6>& v_odom)
+    {
+        auto gt_ext = conf["gt_ext"].as<vec_t<double>>();
+        auto b2l_ext = conf["b2l_ext"].as<vec_t<double>>();
+
+        Pose6 b2l = AddNoiseToPose::array2Pose(b2l_ext.data());
+
+        AddNoiseToPose ap(5.0 * to_rad, 0.05);
+
+        double* tmp = ap.addNoiseToAngleAndTrans(gt_ext.data());
+        std::memcpy(poses[0], tmp, 7 * sizeof(double));
+
+        AddNoiseToPose ap1(10.0 * to_rad, 0.1);
+        for(int i=0; i<v_odom.size(); i++){
+            tmp = ap1.addNoiseToAngleAndTrans(AddNoiseToPose::pose2Array(v_odom[i] * b2l));
+            std::memcpy(poses[i+1], tmp, 7 * sizeof(double));
+        }
     }
 
     Pose6 getPose(int idx, bool is_src){
@@ -294,6 +316,8 @@ int main(int argc, char** argv)
     ds.setLeafSize(ds_size, ds_size, ds_size);
     // prepare data block
     OptimParams op(N, problem);
+    op.initParams(conf_yml, v_odom);
+
     for(int i=0; i<N; i++){
         pc_ptr src = vv_pc[0][i];
         pc_ptr tar = vv_pc[1][i];
@@ -314,8 +338,61 @@ int main(int argc, char** argv)
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
 
-    // 4. show result 
+    // 4. show result
+    rosbag::Bag obag(pkg_dir + conf_yml["out_bag"].as<std::string>(), rosbag::bagmode::Write);
+    // 4.1 write globalmap
+    ros::Time rt_st(1.0);
+    sensor_msgs::PointCloud2 ros_globalmap;
+    pcl::toROSMsg(*global_map, ros_globalmap);
+    ros_globalmap.header.frame_id = "map";
+    ros_globalmap.header.stamp = rt_st;
+    obag.write("/globalmap", rt_st, ros_globalmap);
+    // 4.2 write all pose path and pc
+    double step_time = 0.1;
+    // write path
+    nav_msgs::Path pa;
+    pa.header.frame_id = "map";
+    pa.header.stamp = rt_st;
 
-    inf.close();    
+    for(int i=0; i<N; i++){
+        Pose6 p1 = op.getPose(i+1, true);
+        pc_t pc;
+        pcl::transformPointCloud<pt_t>(*(vv_pc[0][i]), pc, p1.matrix().cast<float>());
+        sensor_msgs::PointCloud2 rpc;
+        pcl::toROSMsg(pc, rpc);
+        rpc.header.frame_id = lidar_topic[0];
+        rpc.header.stamp = ros::Time(1.0 + i * step_time);
+        obag.write(lidar_topic[0], rpc.header.stamp, rpc);
+
+        Pose6 p2 = op.getPose(i+1, false);
+        pcl::transformPointCloud<pt_t>(*(vv_pc[1][i]), pc, p2.matrix().cast<float>());
+        pcl::toROSMsg(pc, rpc);
+        rpc.header.frame_id = lidar_topic[1];
+        rpc.header.stamp = ros::Time(1.0 + i * step_time);
+        obag.write(lidar_topic[1], rpc.header.stamp, rpc);
+
+        auto& odom = v_odom[i];
+
+        geometry_msgs::PoseStamped ps;
+        ps.header.frame_id = "avia1";
+        ps.header.stamp = ros::Time(1.0 + i * step_time);
+        ps.pose.position.x = odom.translation().x();
+        ps.pose.position.y = odom.translation().y();
+        ps.pose.position.z = odom.translation().z();
+
+        Qd q(odom.rotation());
+        ps.pose.orientation.x = q.x();
+        ps.pose.orientation.y = q.y();
+        ps.pose.orientation.z = q.z();
+        ps.pose.orientation.w = q.w();
+
+        pa.poses.push_back(ps);
+    }
+    obag.write("/path", rt_st, pa);
+
+    inf.close();   
+    bag.close();
+    obag.close();
+    
     return 0;
 }

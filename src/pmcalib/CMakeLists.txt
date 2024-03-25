@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
     rosbag
     nav_msgs
     sensor_msgs
+    tf2_ros
 )
 
 find_package(Eigen3 REQUIRED)
@@ -28,3 +29,13 @@ target_link_libraries(calib
     spdlog
     yaml-cpp
 )
+
+add_executable(_test_disturb _test_disturb.cpp)
+target_include_directories(_test_disturb PRIVATE 
+    ${catkin_INCLUDE_DIRS}
+)
+target_link_libraries(_test_disturb
+    ${catkin_LIBRARIES}
+)
+target_compile_definitions(_test_disturb PUBLIC TEST_DISTURB)
+

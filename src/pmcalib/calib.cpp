@@ -48,18 +48,27 @@ using vec_t = std::vector<T>;
 template <typename T>
 using vvec_t = std::vector<std::vector<T>>;
 
+int dg_rb_size = 0;
+
 struct OptimParams
 {
     // the first one is ext
-    OptimParams(int n, ceres::Problem& pro_) : pro(pro_)
-    {
+    OptimParams(int n) {
         poses.resize(n+1);
-        for(int i=0; i<n+1; i++)    poses[i] = new double[7];
-
-        // add ext
-        pro.AddParameterBlock(poses[0], 4, new ceres::QuaternionParameterization());
-        pro.AddParameterBlock(&(poses[0][4]), 3);
+        for(int i=0; i<n+1; i++){
+            poses[i] = new double[7];
+        }
     }
+
+    // OptimParams(int n, ceres::Problem& pro_) : pro(pro_)
+    // {
+    //     poses.resize(n+1);
+    //     for(int i=0; i<n+1; i++){
+    //         poses[i] = new double[7];
+    //         pro.AddParameterBlock(poses[i], 4, lq);
+    //         pro.AddParameterBlock(&(poses[i][4]), 3);
+    //     }
+    // }
 
     void initParams(const YAML::Node& conf, const vec_t<Pose6>& v_odom)
     {
@@ -68,12 +77,14 @@ struct OptimParams
 
         Pose6 b2l = AddNoiseToPose::array2Pose(b2l_ext.data());
 
-        AddNoiseToPose ap(5.0 * to_rad, 0.05);
+        AddNoiseToPose ap(10.0 * to_rad, 0.1);
+        // AddNoiseToPose ap(0, 0);
 
         double* tmp = ap.addNoiseToAngleAndTrans(gt_ext.data());
         std::memcpy(poses[0], tmp, 7 * sizeof(double));
 
         AddNoiseToPose ap1(10.0 * to_rad, 0.1);
+        // AddNoiseToPose ap1(0, 0);
         for(int i=0; i<v_odom.size(); i++){
             tmp = ap1.addNoiseToAngleAndTrans(AddNoiseToPose::pose2Array(v_odom[i] * b2l));
             std::memcpy(poses[i+1], tmp, 7 * sizeof(double));
@@ -85,8 +96,8 @@ struct OptimParams
         Pose6 pos;
         pos.setIdentity();
         
-        Qd q(poses[idx]);
-        pos.rotate(q);
+        Qd q = Eigen::Map<Qd>(poses[idx]);
+        pos.linear() = q.toRotationMatrix();
         pos.translation() = Eigen::Map<V3>(&(poses[idx][4]));
 
         if(!is_src){
@@ -96,7 +107,7 @@ struct OptimParams
         return pos;
     }
 
-    ceres::Problem& pro;
+    // ceres::Problem& pro;
     vec_t<double*> poses;
 };
 
@@ -106,21 +117,20 @@ struct SrcICPError
 
     // Factory to hide the construction of the CostFunction object from the client code.
     static ceres::CostFunction* Create(const plane_t& pl_, const pt_t& pt_) {
-        return (new ceres::AutoDiffCostFunction<SrcICPError, 1, 7>(new SrcICPError(pl_, pt_)));
+        return (new ceres::AutoDiffCostFunction<SrcICPError, 1, 4, 3>(new SrcICPError(pl_, pt_)));
     }
 
     template <typename T>
-    bool operator()(const T* const pose, T* residuals) const {
+    bool operator()(const T* const q_, const T* const t_, T* residuals) const {
         // pose 0~3 q, 4~6, t
-        Eigen::Quaternion<T> q = Eigen::Map<const Eigen::Quaternion<T>>(pose);
-        Eigen::Matrix<T,3,1> t = Eigen::Map<const Eigen::Matrix<T,3,1>>(&(pose[4]));
-        Eigen::Matrix<T,4,1> n = Eigen::Map<const Eigen::Matrix<T,4,1>>((T*)(pl.data()));
+        Eigen::Quaternion<T> q = Eigen::Map<const Eigen::Quaternion<T>>(q_);
+        Eigen::Matrix<T,3,1> t = Eigen::Map<const Eigen::Matrix<T,3,1>>(t_);
 
         Eigen::Matrix<T,4,1> ep; ep << T(pt.x), T(pt.y), T(pt.z), T(1.0);
         // ep.block<3, 1>(0) = q * ep.block<3, 1>(0) + t;
         ep.template head<3>() = q * ep.template head<3>() + t;
 
-        residuals[0] = ep.dot(n);
+        residuals[0] = ep.dot(pl.cast<T>());
 
         return true;
     }
@@ -135,28 +145,26 @@ struct TarICPError
 
     // Factory to hide the construction of the CostFunction object from the client code.
     static ceres::CostFunction* Create(const plane_t& pl_, const pt_t& pt_) {
-        return (new ceres::AutoDiffCostFunction<TarICPError, 1, 7, 7>(new TarICPError(pl_, pt_)));
+        return (new ceres::AutoDiffCostFunction<TarICPError, 1, 4, 3, 4, 3>(new TarICPError(pl_, pt_)));
     }
 
     template <typename T>
-    bool operator()(const T* const pose, const T* const ext, T* residuals) const {
+    bool operator()(const T* const q1_, const T* const t1_, const T* const q2_, const T* const t2_, T* residuals) const {
         // pose 0~3 q, 4~6, t
-        Eigen::Quaternion<T> q1 = Eigen::Map<const Eigen::Quaternion<T>>(pose);
-        Eigen::Matrix<T,3,1> t1 = Eigen::Map<const Eigen::Matrix<T,3,1>>(&(pose[4]));
+        Eigen::Quaternion<T> q1 = Eigen::Map<const Eigen::Quaternion<T>>(q1_);
+        Eigen::Matrix<T,3,1> t1 = Eigen::Map<const Eigen::Matrix<T,3,1>>(t1_);
 
-        Eigen::Quaternion<T> q2 = Eigen::Map<const Eigen::Quaternion<T>>(ext);
-        Eigen::Matrix<T,3,1> t2 = Eigen::Map<const Eigen::Matrix<T,3,1>>(&(ext[4]));
+        Eigen::Quaternion<T> q2 = Eigen::Map<const Eigen::Quaternion<T>>(q2_);
+        Eigen::Matrix<T,3,1> t2 = Eigen::Map<const Eigen::Matrix<T,3,1>>(t2_);
 
         q2 = q1 * q2;
         t2 = q1 * t2 + t1;
-
-        Eigen::Matrix<T,4,1> n = Eigen::Map<const Eigen::Matrix<T,4,1>>((T*)(pl.data()));
 
         Eigen::Matrix<T,4,1> ep; ep << T(pt.x), T(pt.y), T(pt.z), T(1.0);
         // ep.head<3>() = q2 * ep.head<3>() + t2;
         ep.template head<3>() = q2 * ep.template head<3>() + t2;
 
-        residuals[0] = ep.dot(n);
+        residuals[0] = ep.dot(pl.cast<T>());
 
         return true;
     }
@@ -202,9 +210,6 @@ bool esti_plane(plane_t &pca_result, const vec_t<pt_t> &point, const T &threshol
 
 void addResidualBlock(int idx, pc_ptr& pc, pcl::KdTreeFLANN<pt_t>& kdtree, OptimParams& op, ceres::Problem& pro, bool is_src)
 {
-    pro.AddParameterBlock(op.poses[0], 4, new ceres::QuaternionParameterization());
-    pro.AddParameterBlock(&(op.poses[0][4]), 3);
-
     Pose6 initpose = op.getPose(idx, is_src);
 
     for(const auto& pt : pc->points)
@@ -229,10 +234,12 @@ void addResidualBlock(int idx, pc_ptr& pc, pcl::KdTreeFLANN<pt_t>& kdtree, Optim
                 float s = 1 - 0.9 * fabs(pd2) / sqrt(p_body.norm());
 
                 if (s > 0.9) {
+                    dg_rb_size++;
+
                     if(is_src){
-                        pro.AddResidualBlock(SrcICPError::Create(pabcd, pt), nullptr, op.poses[idx]);
+                        pro.AddResidualBlock(SrcICPError::Create(pabcd, pt), nullptr, op.poses[idx], &(op.poses[idx][4]));
                     }else{
-                        pro.AddResidualBlock(TarICPError::Create(pabcd, pt), nullptr, op.poses[idx]);
+                        pro.AddResidualBlock(TarICPError::Create(pabcd, pt), nullptr, op.poses[idx], &(op.poses[idx][4]), op.poses[0], &(op.poses[0][4]));
                     }
                 }
             }
@@ -257,10 +264,17 @@ int main(int argc, char** argv)
     auto lidar_topic = conf_yml["lidar_topic"].as<vec_t<std::string>>();
     lg->info("lidar_topic: {}", lidar_topic);
 
+    float ds_size;
+    ds_size = conf_yml["ds_size"].as<float>();
+    pcl::VoxelGrid<pt_t> ds;
+    ds.setLeafSize(ds_size, ds_size, ds_size);
+
     // 1. load gt map and make kdtree
     pc_t::Ptr global_map = pcl::make_shared<pc_t>();
     std::string data_dir = pkg_dir + conf_yml["pcd_file"].as<std::string>();
     pcl::io::loadPCDFile<pt_t>(data_dir, *global_map);
+    ds.setInputCloud(global_map);
+    ds.filter(*global_map);
     pcl::KdTreeFLANN<pt_t> kdtree;
     kdtree.setInputCloud(global_map);
 
@@ -301,42 +315,64 @@ int main(int argc, char** argv)
                 pcl::fromROSMsg(*msg, *cloud);
                 pcl_conversions::toPCL(msg->header.stamp, cloud->header.stamp);
                 vv_pc[i].emplace_back(cloud);
+                lg->info("{} get pts: {}", tp, cloud->size());
             }
         }
     }
 
     // 3. contruct and solve optimization problem
     // 3.1 init ext, test 2 lidars case first
-    int N = v_odom.size();
-    ceres::Problem problem;
-
-    float ds_size;
-    ds_size = conf_yml["ds_size"].as<float>();
-    pcl::VoxelGrid<pt_t> ds;
-    ds.setLeafSize(ds_size, ds_size, ds_size);
     // prepare data block
-    OptimParams op(N, problem);
+    int N = v_odom.size();
+    // OptimParams op(N, problem);
+    OptimParams op(N);
     op.initParams(conf_yml, v_odom);
 
-    for(int i=0; i<N; i++){
-        pc_ptr src = vv_pc[0][i];
-        pc_ptr tar = vv_pc[1][i];
+    int iterN = conf_yml["iter"].as<int>();
 
-        // maybe downsample a bit?
-        // downsample xxx
-        ds.setInputCloud(src);
-        ds.filter(*src);
-        ds.setInputCloud(tar);
-        ds.filter(*tar);
+    for(int iter=0; iter<iterN; iter++){   
 
-        // add residuals
-        addResidualBlock(i+1, src, kdtree, op, problem, true);
-        addResidualBlock(i+1, tar, kdtree, op, problem, false);
+        ceres::Problem problem;
+        ceres::Solver::Options options;
+        ceres::Solver::Summary summary;
+        // options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+        options.minimizer_progress_to_stdout = true;
+        
+        ceres::LocalParameterization *lq = new ceres::QuaternionParameterization();
+
+        // add to problem
+        for(int i=0; i<N+1; i++){
+            problem.AddParameterBlock(op.poses[i], 4, lq);
+            problem.AddParameterBlock(&(op.poses[i][4]), 3);
+        }
+        // remove all residual blocks
+        // vec_t<ceres::ResidualBlockId> rb_v;
+        // problem.GetResidualBlocks(&rb_v);
+        // for(auto& id : rb_v)    problem.RemoveResidualBlock(id);
+
+        for(int i=0; i<N; i++){
+            pc_ptr src = vv_pc[0][i];
+            pc_ptr tar = vv_pc[1][i];
+
+            // maybe downsample a bit?
+            // downsample xxx
+            pc_ptr src_ = pcl::make_shared<pc_t>();
+            pc_ptr tar_ = pcl::make_shared<pc_t>();
+            
+            ds.setInputCloud(src);
+            ds.filter(*src_);
+            ds.setInputCloud(tar);
+            ds.filter(*tar_);
+
+            // add residuals
+            addResidualBlock(i+1, src_, kdtree, op, problem, true);
+            addResidualBlock(i+1, tar_, kdtree, op, problem, false);
+        }   
+
+        // lg->info("residual block size: {}", dg_rb_size);
+        ceres::Solve(options, &problem, &summary);
+        std::cout << summary.BriefReport() << std::endl;
     }
-
-    ceres::Solver::Options options;
-    ceres::Solver::Summary summary;
-    ceres::Solve(options, &problem, &summary);
 
     // 4. show result
     rosbag::Bag obag(pkg_dir + conf_yml["out_bag"].as<std::string>(), rosbag::bagmode::Write);
@@ -348,7 +384,7 @@ int main(int argc, char** argv)
     ros_globalmap.header.stamp = rt_st;
     obag.write("/globalmap", rt_st, ros_globalmap);
     // 4.2 write all pose path and pc
-    double step_time = 0.1;
+    double step_time = 0.5;
     // write path
     nav_msgs::Path pa;
     pa.header.frame_id = "map";
@@ -360,21 +396,21 @@ int main(int argc, char** argv)
         pcl::transformPointCloud<pt_t>(*(vv_pc[0][i]), pc, p1.matrix().cast<float>());
         sensor_msgs::PointCloud2 rpc;
         pcl::toROSMsg(pc, rpc);
-        rpc.header.frame_id = lidar_topic[0];
+        rpc.header.frame_id = "map";
         rpc.header.stamp = ros::Time(1.0 + i * step_time);
         obag.write(lidar_topic[0], rpc.header.stamp, rpc);
 
         Pose6 p2 = op.getPose(i+1, false);
         pcl::transformPointCloud<pt_t>(*(vv_pc[1][i]), pc, p2.matrix().cast<float>());
         pcl::toROSMsg(pc, rpc);
-        rpc.header.frame_id = lidar_topic[1];
+        rpc.header.frame_id = "map";
         rpc.header.stamp = ros::Time(1.0 + i * step_time);
         obag.write(lidar_topic[1], rpc.header.stamp, rpc);
 
         auto& odom = v_odom[i];
 
         geometry_msgs::PoseStamped ps;
-        ps.header.frame_id = "avia1";
+        ps.header.frame_id = lidar_topic[0];
         ps.header.stamp = ros::Time(1.0 + i * step_time);
         ps.pose.position.x = odom.translation().x();
         ps.pose.position.y = odom.translation().y();

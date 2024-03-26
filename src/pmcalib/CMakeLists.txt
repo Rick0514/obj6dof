@@ -1,5 +1,7 @@
 set(CMAKE_CXX_STANDARD 17)
 
+# set(CMAKE_BUILD_TYPE RelWithDebInfo)
+
 find_package(spdlog REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS 

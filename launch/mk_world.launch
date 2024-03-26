@@ -6,9 +6,9 @@
     <!-- <env name="GAZEBO_MODEL_PATH" value="/home/rick/chore/proj/xingqiu1/ws/src/dolly_gazebo/models"/> -->
     <!-- 启动 gazebo -->
     <!-- <arg name="world_name" default="$(find robot_gazebo)/worlds/test_sensors_0.world" /> -->
-    <arg name="world_name" default="city.world" />
+    <!-- <arg name="world_name" default="city.world" /> -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <arg name="world_name" value="$(find obj6dof)/worlds/$(arg world_name)" />
+        <!-- <arg name="world_name" value="$(find obj6dof)/worlds/$(arg world_name)" /> -->
         <arg name="paused" value="false" />
         <arg name="use_sim_time" value="true" />
         <arg name="gui" value="true" />

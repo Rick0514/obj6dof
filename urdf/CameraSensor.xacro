@@ -37,6 +37,23 @@
                         <near>0.2</near>
                         <far>300</far>
                     </clip>
+                    <lens>
+                        <intrinsics>
+                            <fx>1311.05972093921</fx>
+                            <fy>1313.67270907052</fy>
+                            <cx>749.818357327634</cx>
+                            <cy>534.587402816582</cy>
+                            <s>0</s>
+                        </intrinsics>
+                    </lens>
+                    <distortion>
+                        <k1>-0.0654429523802683</k1>
+                        <k2>0.0998393523310624</k2>
+                        <k3>0.0</k3>
+                        <p1>0.00107153425553708</p1>
+                        <p2>-0.00283428566558518</p2>
+                        <center>0.5 0.5</center>
+                    </distortion>
                     <noise>
                         <type>gaussian</type>
                         <mean>0.0</mean>
